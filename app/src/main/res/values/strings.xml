@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Calculator</string>
+    <string name="textViewCalculation">0</string>
+    <string name="textViewSubtotal">0</string>
+</resources>
