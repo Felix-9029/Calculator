@@ -13,23 +13,32 @@ import java.util.IllegalFormatException
 
 class MainActivity : AppCompatActivity() {
 
+    // states
     private var isPolish = false
     private var isError = false
     private var hasResult = false
+
+    // flags
     private var operatorUsed = false
+
     private var dotUsed = false
     private var dotLast = false
+
     private var specialTypeBrace = false
     private var specialTypeMult = false
+
     private var bracesOpen = 0
     private var bracesClosed = 0
     private var braceUsed = false
     private var bracesOpenUsed = false
+
+    // inits
     private lateinit var expression: Expression
     private lateinit var input: CharSequence
     private lateinit var textViewCalculation: TextView
     private lateinit var textViewSubtotal: TextView
     private lateinit var button: Button
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,21 +47,24 @@ class MainActivity : AppCompatActivity() {
         textViewSubtotal = findViewById(R.id.textViewSubtotal)
     }
 
+
+    // handler -------------------------------------------------------------
     fun numericButtonClickHandler(view: android.view.View) {
         input = getInput(view)
 
+        // Replace initial zero with number after input
         if (textViewCalculation.text.toString() == "0") {
             textViewCalculation.text = input
         }
-        // Replace Result after Number input
+        // Replace Result after number input
         else if (hasResult || isError) {
             textViewCalculation.text = input
             hasResult = false
             isError = false
-        }
-        else {
+        } else {
             textViewCalculation.append(input)
         }
+
         operatorUsed = false
         dotLast = false
         braceUsed = false
@@ -64,11 +76,10 @@ class MainActivity : AppCompatActivity() {
         if (!(dotUsed || hasResult || isError)) {
             if (operatorUsed || bracesOpenUsed) {
                 textViewCalculation.append("0.")
-            }
-            else {
+            } else {
                 textViewCalculation.append(".")
             }
-            dotUsed = true
+
             dotLast = true
             operatorUsed = false
             braceUsed = false
@@ -78,21 +89,21 @@ class MainActivity : AppCompatActivity() {
 
     fun braceButtonClickHandler(view: android.view.View) {
         if (!isError) {
-        if (!bracesOpenUsed) {
-            textViewCalculation.append("(")
-            bracesOpen++
-            braceUsed = true
-            bracesOpenUsed = true
-        }
-        else if (bracesOpen-1 > bracesClosed) {
-            textViewCalculation.text = textViewCalculation.text.dropLast(1)
-            bracesOpen--
-            textViewCalculation.append(")")
-            bracesClosed++
-            braceUsed = true
-            bracesOpenUsed = false
-        }
-        hasResult = false
+            if (!bracesOpenUsed) {
+                textViewCalculation.append("(")
+                bracesOpen++
+                braceUsed = true
+                bracesOpenUsed = true
+            } else if (bracesOpen - 1 > bracesClosed) {
+                textViewCalculation.text = textViewCalculation.text.dropLast(1)
+                bracesOpen--
+                textViewCalculation.append(")")
+                bracesClosed++
+                braceUsed = true
+                bracesOpenUsed = false
+            }
+
+            hasResult = false
         }
     }
 
@@ -104,9 +115,8 @@ class MainActivity : AppCompatActivity() {
                 textViewCalculation.append(input)
                 operatorUsed = true
             }
-            dotUsed = false
-            hasResult = false
 
+            hasResult = false
         }
     }
 
@@ -140,6 +150,7 @@ class MainActivity : AppCompatActivity() {
                         calculation()
                     }
                     textViewCalculation.text = result
+
                     hasResult = true
                     specialTypeBrace = false
                     specialTypeMult = false
@@ -169,10 +180,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getInput(view: android.view.View): CharSequence {
-        button = findViewById(view.id)
-        return button.text
-    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     private fun isNumeric(char: CharSequence): Boolean {
         return try {
@@ -183,21 +202,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun calculation(): CharSequence {
+    private fun getInput(view: android.view.View): CharSequence {
+        button = findViewById(view.id)
+        return button.text
+    }
+
+    private fun textViewCalculationToString(): String {
+        return textViewCalculation.text.toString().replace("×", "*").replace("÷", "/")
+    }
+
+    private fun syntaxCorrect(): Boolean {
         try {
-            val calculation: String = (textViewCalculation.text.toString()).replace("×", "*").replace("÷", "/")
+            ExpressionBuilder(textViewCalculationToString()).build()
+        } catch (e: Exception) {
+            return false
+        }
+        return true
+    }
+
+    private fun calculation(): CharSequence {
+        return try {
+            val calculation: String = textViewCalculationToString()
             val expression: Expression = ExpressionBuilder(calculation).build()
             val format = DecimalFormat("0.#")
-            return format.format(expression.evaluate()).toString().replace(",", ".")
-        }
-        catch (e: Exception) {
-
-            return "Syntax-Error"
+            format.format(expression.evaluate()).toString().replace(",", ".")
+        } catch (e: Exception) {
+            "Syntax-Error"
         }
     }
 
     private fun calculationPolish(): CharSequence {
-        val calculation: String = (textViewCalculation.text.toString()).replace("×", "*").replace("÷", "/")
+        val calculation: String = textViewCalculationToString()
         val expression: Expression = ExpressionBuilder(calculation).build()
 
         return "asd"
