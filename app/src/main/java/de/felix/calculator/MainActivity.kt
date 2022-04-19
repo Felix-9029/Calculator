@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import net.objecthunter.exp4j.Expression
 import net.objecthunter.exp4j.ExpressionBuilder
 import net.objecthunter.exp4j.operator.Operator
+import java.lang.Double.parseDouble
 import java.lang.Integer.parseInt
 import java.text.DecimalFormat
 import java.util.IllegalFormatException
@@ -20,9 +21,6 @@ class MainActivity : AppCompatActivity() {
 
     // flags
     private var operatorUsed = false
-
-    private var dotUsed = false
-    private var dotLast = false
 
     private var specialTypeBrace = false
     private var specialTypeMult = false
@@ -66,24 +64,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         operatorUsed = false
-        dotLast = false
         braceUsed = false
         bracesOpenUsed = false
     }
 
     fun dotButtonClickHandler(view: android.view.View) {
-        input = getInput(view)
-        if (!(dotUsed || hasResult || isError)) {
-            if (operatorUsed || bracesOpenUsed) {
-                textViewCalculation.append("0.")
-            } else {
-                textViewCalculation.append(".")
-            }
-
-            dotLast = true
-            operatorUsed = false
-            braceUsed = false
-            bracesOpenUsed = false
+        if (!isError && !isNumeric(textViewCalculationLastChar()) && !textViewCalculationLastNumber().contains(".")) {
+            textViewCalculation.append("0.")
+        } else if (!isError && !textViewCalculationLastNumber().contains(".") && isNumeric(textViewCalculationLastChar())) {
+            textViewCalculation.append(".")
+        } else if (isError) {
+            textViewCalculation.text = "0."
         }
     }
 
@@ -94,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                 bracesOpen++
                 braceUsed = true
                 bracesOpenUsed = true
-            } else if (bracesOpen - 1 > bracesClosed) {
+            } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
                 textViewCalculation.text = textViewCalculation.text.dropLast(1)
                 bracesOpen--
                 textViewCalculation.append(")")
@@ -108,14 +99,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun operatorButtonClickHandler(view: android.view.View) {
-        if (!(dotLast || braceUsed || isError)) {
+        if (!isError && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")")) {
             input = getInput(view)
-
-            if (!operatorUsed) {
-                textViewCalculation.append(input)
-                operatorUsed = true
-            }
-
+            textViewCalculation.append(input)
             hasResult = false
         }
     }
@@ -139,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 hasResult = false
             }
             "=" -> {
-                if (!(dotLast || operatorUsed || bracesOpenUsed)) {
+                if (isNumeric(textViewCalculationLastChar())) {
                     result = if (isPolish) {
                         calculationPolish()
                     } else {
@@ -181,18 +167,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     private fun isNumeric(char: CharSequence): Boolean {
         return try {
             parseInt(char as String)
@@ -209,6 +183,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun textViewCalculationToString(): String {
         return textViewCalculation.text.toString().replace("×", "*").replace("÷", "/")
+    }
+
+    private fun textViewCalculationLastChar(): String {
+        return textViewCalculation.text.substring(textViewCalculation.text.length - 1)
+    }
+
+    private fun textViewCalculationSecondLastChar(): String {
+        return textViewCalculation.text.dropLast(1).substring(textViewCalculation.text.dropLast(1).length - 1)
+    }
+
+    private fun textViewCalculationLastNumber(): String {
+        var i = 1
+        while (isNumeric(textViewCalculation.text.substring(textViewCalculation.text.length - i)) && textViewCalculation.text.length != i) {
+            i++
+        }
+        var x = textViewCalculation.text.substring(textViewCalculation.text.length - i)
+        return x
     }
 
     private fun syntaxCorrect(): Boolean {
