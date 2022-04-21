@@ -1,16 +1,17 @@
 package de.felix.calculator
 
+import android.content.res.Configuration
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import net.objecthunter.exp4j.Expression
 import net.objecthunter.exp4j.ExpressionBuilder
-import net.objecthunter.exp4j.operator.Operator
 import java.lang.Double.parseDouble
 import java.lang.Integer.parseInt
 import java.text.DecimalFormat
-import java.util.IllegalFormatException
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,19 +20,11 @@ class MainActivity : AppCompatActivity() {
     private var isError = false
     private var hasResult = false
 
-    // flags
-    private var operatorUsed = false
-
-    private var specialTypeBrace = false
-    private var specialTypeMult = false
-
     private var bracesOpen = 0
     private var bracesClosed = 0
-    private var braceUsed = false
-    private var bracesOpenUsed = false
 
     // inits
-    private lateinit var expression: Expression
+    private lateinit var result: CharSequence
     private lateinit var input: CharSequence
     private lateinit var textViewCalculation: TextView
     private lateinit var textViewSubtotal: TextView
@@ -47,142 +40,259 @@ class MainActivity : AppCompatActivity() {
 
 
     // handler -------------------------------------------------------------
-    fun numericButtonClickHandler(view: android.view.View) {
+    fun numericButtonClickHandler(view: View) {
         input = getInput(view)
+        errorHandler()
 
-        // Replace initial zero with number after input
-        if (textViewCalculation.text.toString() == "0") {
-            textViewCalculation.text = input
-        }
         // Replace Result after number input
-        else if (hasResult || isError) {
+        if (hasResult) {
             textViewCalculation.text = input
             hasResult = false
             isError = false
+        }
+        // Replace initial zero with number after input
+        else if (textViewCalculation.text.toString() == "0") {
+            textViewCalculation.text = input
         } else {
-            textViewCalculation.append(input)
-        }
-
-        operatorUsed = false
-        braceUsed = false
-        bracesOpenUsed = false
-    }
-
-    fun dotButtonClickHandler(view: android.view.View) {
-        if (!isError && !isNumeric(textViewCalculationLastChar()) && !textViewCalculationLastNumber().contains(".")) {
-            textViewCalculation.append("0.")
-        } else if (!isError && !textViewCalculationLastNumber().contains(".") && isNumeric(textViewCalculationLastChar())) {
-            textViewCalculation.append(".")
-        } else if (isError) {
-            textViewCalculation.text = "0."
+            if (orientationCheckLandscape()) {
+                if (textViewCalculationLastChar() == "e" || textViewCalculationLastChar() == "π") {
+                    textViewCalculation.append("×")
+                }
+                textViewCalculation.append(input)
+            }
+            textViewSubtotal.text = calculation()
         }
     }
 
-    fun braceButtonClickHandler(view: android.view.View) {
-        if (!isError) {
-            if (!bracesOpenUsed) {
+    fun dotButtonClickHandler(view: View) {
+        errorHandler()
+
+        if (orientationCheckLandscape()) {
+            if (!isNumeric(textViewCalculationLastChar()) && !textViewCalculationLastNumber().contains(".")) {
+                if (textViewCalculationLastChar() == "e" || textViewCalculationLastChar() == "π") {
+                    textViewCalculation.append("×")
+                }
+                textViewCalculation.append("0.")
+            } else if (!textViewCalculationLastNumber().contains(".") && isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != "e" && textViewCalculationLastChar() != "π") {
+                textViewCalculation.append(".")
+                hasResult = false
+            }
+            textViewSubtotal.text = calculation()
+        }
+    }
+
+    fun braceButtonClickHandler(view: View) {
+        errorHandler()
+
+        if (orientationCheckLandscape()) {
+            if (textViewCalculationLastChar() != "(") {
                 textViewCalculation.append("(")
                 bracesOpen++
-                braceUsed = true
-                bracesOpenUsed = true
             } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
                 textViewCalculation.text = textViewCalculation.text.dropLast(1)
                 bracesOpen--
                 textViewCalculation.append(")")
                 bracesClosed++
-                braceUsed = true
-                bracesOpenUsed = false
             }
-
             hasResult = false
         }
     }
 
-    fun operatorButtonClickHandler(view: android.view.View) {
-        if (!isError && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")")) {
-            input = getInput(view)
+    fun operatorButtonClickHandler(view: View) {
+        input = getInput(view)
+        errorHandler()
+
+        if (hasResult) {
+            textViewCalculation.text = "ANS"
             textViewCalculation.append(input)
+        }
+        if (orientationCheckLandscape()) {
+            if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
+                textViewCalculation.append(input)
+            }
             hasResult = false
         }
     }
 
-    fun functionButtonClickHandler(view: android.view.View) {
-        lateinit var result: CharSequence
+    fun specialOperatorButtonClickHandler(view: View) {
+        input = getInput(view)
+        errorHandler()
+
+        if (hasResult) {
+            textViewCalculation.text = "ANS×"
+            if (input == "x²" || input == "xⁿ") {
+                textViewCalculation.text = textViewCalculation.text.dropLast(1)
+            }
+            textViewCalculation.append(specialOperatorButtonValueToString(view))
+        } else {
+            if (textViewCalculation.text.toString() == "0" && input != "x²" && input != "xⁿ") {
+                textViewCalculation.text = specialOperatorButtonValueToString(view)
+            } else {
+                if (isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ")) {
+                    textViewCalculation.append("×")
+                    textViewCalculation.append(specialOperatorButtonValueToString(view))
+                }
+                else if (!isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ")) {
+                    textViewCalculation.append(specialOperatorButtonValueToString(view))
+                }
+                if (textViewCalculationLastChar() != "(" && (input == "x²" || input == "xⁿ")) {
+                    textViewCalculation.append(specialOperatorButtonValueToString(view))
+                }
+            }
+        }
+        hasResult = false
+
+    }
+
+    private fun specialOperatorButtonValueToString(view: View): CharSequence {
+        when (input) {
+            "sin" -> {
+                bracesOpen++
+                return "sin("
+            }
+            "cos" -> {
+                bracesOpen++
+                return "cos("
+            }
+            "tan" -> {
+                bracesOpen++
+                return "tan("
+            }
+            "√" -> {
+                bracesOpen++
+                return "sqrt("
+            }
+            "x²" -> {
+                bracesOpen++
+                bracesClosed++
+                return "^(2)"
+            }
+            "xⁿ" -> {
+                bracesOpen++
+                return "^("
+            }
+        }
+        return ""
+    }
+
+    fun specialButtonClickHandler(view: View) {
+        input = getInput(view)
+        errorHandler()
+
+        when (input) {
+            " " -> textViewCalculation.append(input)
+        }
+
+        isPolish = textViewCalculation.text.contains(" ")
+    }
+
+    fun functionButtonClickHandler(view: View) {
         input = getInput(view)
 
         when (input) {
             // Special Keys
             "AC" -> {
                 textViewCalculation.text = "0"
+                result = "0"
+                bracesOpen = 0
+                bracesClosed = 0
+                textViewSubtotal.text = calculation()
                 hasResult = false
+                isError = false
             }
             "⌫" -> {
-                if (textViewCalculation.text.length > 1) {
+                if (isError ||
+                    (textViewCalculation.text.length == 3 && textViewCalculationLastChar() == "S") ||
+                    (textViewCalculation.text.length == 4 && textViewCalculationLastChar() == "(" && (textViewCalculationSecondLastChar() == "s" || textViewCalculationSecondLastChar() == "n")) ||
+                    (textViewCalculation.text.length == 5 && textViewCalculationLastChar() == "(" && textViewCalculationSecondLastChar() == "t")
+                ) {
+
+                    bracesOpen = 0
+                    bracesClosed = 0
+                    textViewCalculation.text = "0"
+                    isError = false
+                } else if (textViewCalculation.text.length > 1) {
+                    when (textViewCalculationLastChar()) {
+                        "(" -> {
+                            if (textViewCalculationSecondLastChar() == "^") {
+                                textViewCalculation.text = textViewCalculation.text.dropLast(1)
+                            } else if (textViewCalculationSecondLastChar() == "n" || textViewCalculationSecondLastChar() == "s") {
+                                textViewCalculation.text = textViewCalculation.text.dropLast(3)
+                            } else if (textViewCalculationSecondLastChar() == "t") {
+                                textViewCalculation.text = textViewCalculation.text.dropLast(4)
+                            }
+                            bracesOpen--
+                        }
+                        ")" -> bracesClosed--
+                    }
                     textViewCalculation.text = textViewCalculation.text.dropLast(1)
                 } else {
+                    bracesOpen = 0
+                    bracesClosed = 0
                     textViewCalculation.text = "0"
+                    isError = false
+                }
+
+                if (isNumeric(textViewCalculationLastChar())) {
+                    textViewSubtotal.text = calculation()
                 }
                 hasResult = false
             }
             "=" -> {
-                if (isNumeric(textViewCalculationLastChar())) {
+                if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == "." || textViewCalculationLastChar() == ")") {
                     result = if (isPolish) {
                         calculationPolish()
                     } else {
-                        while (bracesOpen != bracesClosed) {
-                            textViewCalculation.append(")")
-                            bracesClosed++
-                        }
                         calculation()
+                    }
+                    if (result == "Syntax-Error") {
+                        isError = true
                     }
                     textViewCalculation.text = result
 
                     hasResult = true
-                    specialTypeBrace = false
-                    specialTypeMult = false
                     bracesOpen = 0
                     bracesClosed = 0
-                    braceUsed = false
-                    bracesOpenUsed = false
                 }
             }
         }
     }
 
-    fun specialButtonClickHandler(view: android.view.View) {
-        lateinit var result: CharSequence
-        input = getInput(view)
-
-
-        isPolish = textViewCalculation.text.contains(" ")
-
-        if (isNumeric(input)) {
-            result = if (isPolish) {
-                calculationPolish()
-            } else {
-                calculation()
-            }
-            textViewSubtotal.text = result
+    private fun errorHandler() {
+        if (isError) {
+            textViewCalculation.text = "0"
+            textViewSubtotal.text = calculation()
         }
     }
 
+    private fun orientationCheckLandscape(): Boolean {
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (textViewCalculation.text.length >= 13) {
+                throwToast("You aren't allowed to enter more than 13 characters!")
+                return false
+            }
+        }
+        return true
+    }
 
     private fun isNumeric(char: CharSequence): Boolean {
         return try {
-            parseInt(char as String)
+            if (!(char == "π" || char == "e")) {
+                parseInt(char as String)
+            }
             true
         } catch (e: NumberFormatException) {
             false
         }
     }
 
-    private fun getInput(view: android.view.View): CharSequence {
+    private fun getInput(view: View): CharSequence {
         button = findViewById(view.id)
         return button.text
     }
 
-    private fun textViewCalculationToString(): String {
-        return textViewCalculation.text.toString().replace("×", "*").replace("÷", "/")
+    private fun textViewToString(textView: TextView): String {
+        return textView.text.toString().replace("×", "*").replace("÷", "/")
     }
 
     private fun textViewCalculationLastChar(): String {
@@ -198,23 +308,25 @@ class MainActivity : AppCompatActivity() {
         while (isNumeric(textViewCalculation.text.substring(textViewCalculation.text.length - i)) && textViewCalculation.text.length != i) {
             i++
         }
-        var x = textViewCalculation.text.substring(textViewCalculation.text.length - i)
-        return x
-    }
-
-    private fun syntaxCorrect(): Boolean {
-        try {
-            ExpressionBuilder(textViewCalculationToString()).build()
-        } catch (e: Exception) {
-            return false
-        }
-        return true
+        return textViewCalculation.text.substring(textViewCalculation.text.length - i)
     }
 
     private fun calculation(): CharSequence {
         return try {
-            val calculation: String = textViewCalculationToString()
-            val expression: Expression = ExpressionBuilder(calculation).build()
+            val stringBuilder = StringBuilder()
+            stringBuilder.append(textViewToString(textViewCalculation))
+            var tmpBracesClosed = bracesClosed
+            while (bracesOpen != tmpBracesClosed) {
+                stringBuilder.append(")")
+                tmpBracesClosed++
+            }
+            var equation = stringBuilder.toString()
+            val expression: Expression = if (equation.contains("ANS")) {
+                equation = equation.replace("ANS", "x")
+                ExpressionBuilder(equation).variables("x", "e", "π").build().setVariable("x", parseDouble(result.toString())).setVariable("e", Math.E).setVariable("π", Math.PI)
+            } else {
+                ExpressionBuilder(equation).build()
+            }
             val format = DecimalFormat("0.#")
             format.format(expression.evaluate()).toString().replace(",", ".")
         } catch (e: Exception) {
@@ -223,9 +335,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun calculationPolish(): CharSequence {
-        val calculation: String = textViewCalculationToString()
+        val calculation: String = textViewToString(textViewCalculation)
         val expression: Expression = ExpressionBuilder(calculation).build()
 
         return "asd"
+    }
+
+    private fun throwToast(message: String) {
+        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
     }
 }
