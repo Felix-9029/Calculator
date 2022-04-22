@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/itemSin"
+        android:title="sin" />
+    <item
+        android:id="@+id/itemCos"
+        android:title="cos" />
+    <item
+        android:id="@+id/itemTan"
+        android:title="tan" />
+    <item
+        android:id="@+id/itemSqrt"
+        android:title="sqrt" />
+</menu>
