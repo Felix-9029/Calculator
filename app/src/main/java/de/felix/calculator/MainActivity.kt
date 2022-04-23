@@ -15,6 +15,15 @@ import java.lang.Double.parseDouble
 import java.lang.Integer.parseInt
 import java.text.DecimalFormat
 
+/**
+ * @author <p>Felix Reichert</p>
+ * <p>Matrikelnummer: 19019</p>
+ * <p>Package: de.felix.calculator</p>
+ * <p>Datei: MainActivity.kt</p>
+ * <p>Datum: 20.04.2022</p>
+ * <p>Version: 1</p>
+ */
+
 class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     // states
@@ -32,7 +41,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     private lateinit var textViewSubtotal: TextView
     private lateinit var button: Button
 
-
+    /**
+     * <p>Initialize on startup</p>
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -40,6 +51,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         textViewSubtotal = findViewById(R.id.textViewSubtotal)
     }
 
+    /**
+     * Popup-Menu of special operators in normal view</p>
+     */
     fun showOperatorPopup(view: View) {
         val popup = PopupMenu(this, view)
         popup.setOnMenuItemClickListener(this)
@@ -47,6 +61,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         popup.show()
     }
 
+    /**
+     * <p>Click-Handler for popup-items</p>
+     */
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.itemSin -> {
@@ -77,11 +94,17 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 
     // handler -------------------------------------------------------------
 
+    /**
+     * <p>Click-Handler for numeric buttons</p>
+     */
     fun numericButtonClickHandler(view: View) {
         input = getInput(view)
         numericInput()
     }
 
+    /**
+     * <p>Logic for appending clicked numbers to textview</p>
+     */
     private fun numericInput() {
         errorHandler()
 
@@ -105,10 +128,16 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    /**
+     * <p>Click-Handler for dot button</p>
+     */
     fun dotButtonClickHandler(view: View) {
         dotButtonInput()
     }
 
+    /**
+     * <p>Method to append a dot to textview</p>
+     */
     private fun dotButtonInput() {
         errorHandler()
 
@@ -126,32 +155,42 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    /**
+     * <p>Click-Handler for brace button</p>
+     */
     fun braceButtonClickHandler(view: View) {
         braceButtonInput()
     }
 
+    /**
+     * <p>Method to append a brace to textview</p>
+     */
     private fun braceButtonInput() {
         errorHandler()
 
-        if (orientationCheckLandscape()) {
-            if (textViewCalculationLastChar() != "(") {
-                textViewCalculation.append("(")
-                bracesOpen++
-            } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
-                textViewCalculation.text = textViewCalculation.text.dropLast(1)
-                bracesOpen--
-                textViewCalculation.append(")")
-                bracesClosed++
-            }
-            hasResult = false
+        if (orientationCheckLandscape() && textViewCalculationLastChar() != "(") {
+            textViewCalculation.append("(")
+            bracesOpen++
+        } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
+            textViewCalculation.text = textViewCalculation.text.dropLast(1)
+            bracesOpen--
+            textViewCalculation.append(")")
+            bracesClosed++
         }
+        hasResult = false
     }
 
+    /**
+     * <p>Click-Handler for operator buttons</p>
+     */
     fun operatorButtonClickHandler(view: View) {
         input = getInput(view)
         operatorButtonInput()
     }
 
+    /**
+     * <p>Method to append value of an operator button to textview</p>
+     */
     private fun operatorButtonInput() {
         errorHandler()
 
@@ -167,11 +206,17 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    /**
+     * <p>Click-Handler for special operator buttons</p>
+     */
     fun specialOperatorButtonClickHandler(view: View) {
         input = getInput(view)
         specialOperatorInput()
     }
 
+    /**
+     * <p>Method to append value of a special operator button to textview</p>
+     */
     private fun specialOperatorInput() {
         errorHandler()
 
@@ -189,19 +234,30 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                     if (isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ")) {
                         textViewCalculation.append("×")
                         textViewCalculation.append(specialOperatorButtonValueToString())
-                    } else if (!isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ") && textViewCalculationLastChar() != ".") {
+                    }
+
+
+
+
+                    else if (!isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ") && textViewCalculationLastChar() != ".") {
                         textViewCalculation.append(specialOperatorButtonValueToString())
                     }
-                    if (textViewCalculationLastChar() != "(" && (input == "x²" || input == "xⁿ")) {
+                    if (textViewCalculationLastChar() != "(" && (input == "x²" || input == "xⁿ") && textViewCalculationLastChar() != ".") {
                         textViewCalculation.append(specialOperatorButtonValueToString())
                     }
                 }
             }
         }
+        if (input == "x²") {
+            textViewSubtotal.text = calculation()
+        }
         hasResult = false
 
     }
 
+    /**
+     * <p>Method to convert text of special operator buttons to string with correct expression-syntax</p>
+     */
     private fun specialOperatorButtonValueToString(): CharSequence {
         when (input) {
             "sin" -> {
@@ -233,13 +289,20 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return ""
     }
 
-
+    /**
+     * <p>Click-Handler for special buttons</p>
+     */
     fun specialButtonClickHandler(view: View) {
         input = getInput(view)
         specialButtonInput()
     }
 
+    // TODO
+    /**
+     * <p>Method to append value of a special button to textview</p>
+     */
     private fun specialButtonInput() {
+        /*
         errorHandler()
 
         when (input) {
@@ -247,13 +310,20 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
 
         isPolish = textViewCalculation.text.contains(" ")
+        */
     }
 
+    /**
+     * <p>Click-Handler for function buttons</p>
+     */
     fun functionButtonClickHandler(view: View) {
         input = getInput(view)
         functionButtonInput()
     }
 
+    /**
+     * <p>Method to execute special functions</p>
+     */
     private fun functionButtonInput() {
         when (input) {
             // Special Keys
@@ -324,6 +394,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    /**
+     * <p>Method to reset textview after Syntax-Error</p>
+     */
     private fun errorHandler() {
         if (isError) {
             textViewCalculation.text = "0"
@@ -331,6 +404,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    /**
+     * <p>Method to chack phone orientation</p>
+     */
     private fun orientationCheckLandscape(): Boolean {
         if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
             if (textViewCalculation.text.length >= 13) {
@@ -341,6 +417,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return true
     }
 
+    /**
+     * <p>Method to check if value is numeric</p>
+     */
     private fun isNumeric(char: CharSequence): Boolean {
         return try {
             if (!(char == "π" || char == "e")) {
@@ -352,6 +431,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    /**
+     * <p>Method to get the text from the clicked button</p>
+     */
     private fun getInput(view: View): CharSequence {
         button = findViewById(view.id)
         return button.text
@@ -377,6 +459,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return textViewCalculation.text.substring(textViewCalculation.text.length - i)
     }
 
+    /**
+     * <p>Method to calculate the equation from the textview</p>
+     */
     private fun calculation(): CharSequence {
         return try {
             val stringBuilder = StringBuilder()
@@ -400,6 +485,10 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         }
     }
 
+    // TODO
+    /**
+     * <p>Method to calculate the equation from the textview with polish syntax</p>
+     */
     private fun calculationPolish(): CharSequence {
         val calculation: String = textViewToString(textViewCalculation)
         ExpressionBuilder(calculation).build()
@@ -407,6 +496,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         return "asd"
     }
 
+    /**
+     * <p>Method to throw a toast with custom message</p>
+     */
     private fun throwToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
