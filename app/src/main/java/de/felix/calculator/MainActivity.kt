@@ -199,7 +199,13 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             textViewCalculation.append(input)
         }
         if (orientationCheckLandscape()) {
-            if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
+            if (textViewCalculation.text.toString() == "0" && input == "-") {
+                textViewCalculation.text = input
+            }
+            else if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
+                textViewCalculation.append(input)
+            }
+            else if (textViewCalculationLastChar() == "(" && input == "-") {
                 textViewCalculation.append(input)
             }
             hasResult = false
