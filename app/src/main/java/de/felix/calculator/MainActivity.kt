@@ -237,18 +237,15 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                 textViewCalculation.text = specialOperatorButtonValueToString()
             } else {
                 if (orientationCheckLandscape()) {
-                    if (isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ")) {
-                        textViewCalculation.append("×")
-                        textViewCalculation.append(specialOperatorButtonValueToString())
+                    if (!(input == "x²" || input == "xⁿ")) {
+                        if (isNumeric(textViewCalculationLastChar())) {
+                            textViewCalculation.append("×")
+                            textViewCalculation.append(specialOperatorButtonValueToString())
+                        } else if (!isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != ".") {
+                            textViewCalculation.append(specialOperatorButtonValueToString())
+                        }
                     }
-
-
-
-
-                    else if (!isNumeric(textViewCalculationLastChar()) && !(input == "x²" || input == "xⁿ") && textViewCalculationLastChar() != ".") {
-                        textViewCalculation.append(specialOperatorButtonValueToString())
-                    }
-                    if (textViewCalculationLastChar() != "(" && (input == "x²" || input == "xⁿ") && textViewCalculationLastChar() != ".") {
+                    else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")")) {
                         textViewCalculation.append(specialOperatorButtonValueToString())
                     }
                 }
