@@ -245,7 +245,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                             textViewCalculation.append(specialOperatorButtonValueToString())
                         }
                     }
-                    else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")")) {
+                    else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")") && textViewCalculationLastChar() != ".") {
                         textViewCalculation.append(specialOperatorButtonValueToString())
                     }
                 }
