@@ -168,7 +168,10 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     private fun braceButtonInput() {
         errorHandler()
 
-        if (orientationCheckLandscape() && textViewCalculationLastChar() != "(") {
+        if (textViewCalculation.text.toString() == "0") {
+            textViewCalculation.text = "("
+            bracesOpen++
+        } else if (orientationCheckLandscape()) {
             textViewCalculation.append("(")
             bracesOpen++
         } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
@@ -201,11 +204,9 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         if (orientationCheckLandscape()) {
             if (textViewCalculation.text.toString() == "0" && input == "-") {
                 textViewCalculation.text = input
-            }
-            else if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
+            } else if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
                 textViewCalculation.append(input)
-            }
-            else if (textViewCalculationLastChar() == "(" && input == "-") {
+            } else if (textViewCalculationLastChar() == "(" && input == "-") {
                 textViewCalculation.append(input)
             }
             hasResult = false
@@ -244,8 +245,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
                         } else if (!isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != ".") {
                             textViewCalculation.append(specialOperatorButtonValueToString())
                         }
-                    }
-                    else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")") && textViewCalculationLastChar() != ".") {
+                    } else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")") && textViewCalculationLastChar() != ".") {
                         textViewCalculation.append(specialOperatorButtonValueToString())
                     }
                 }
