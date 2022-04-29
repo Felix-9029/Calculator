@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         if (textViewCalculation.text.toString() == "0") {
             textViewCalculation.text = "("
             bracesOpen++
-        } else if (orientationCheckLandscape()) {
+        } else if (orientationCheckLandscape() && textViewCalculationLastChar() != "(") {
             textViewCalculation.append("(")
             bracesOpen++
         } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
