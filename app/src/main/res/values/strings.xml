@@ -2,4 +2,7 @@
     <string name="app_name">Calculator</string>
     <string name="textViewCalculation">0</string>
     <string name="textViewSubtotal">0</string>
+    <string name="darkmode">Darkmode</string>
+    <string name="design_header">Design</string>
+    <string name="DownloaderSettingsLabel">Settings</string>
 </resources>

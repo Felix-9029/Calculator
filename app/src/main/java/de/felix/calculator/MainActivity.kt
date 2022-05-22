@@ -1,7 +1,9 @@
 package de.felix.calculator
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
@@ -9,6 +11,9 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.PreferenceManager
+import kotlinx.android.synthetic.main.activity_main.*
 import net.objecthunter.exp4j.Expression
 import net.objecthunter.exp4j.ExpressionBuilder
 import java.lang.Double.parseDouble
@@ -47,8 +52,38 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        setSupportActionBar(toolbar)
+
+        applySharedPreferenceSettings()
+
         textViewCalculation = findViewById(R.id.textViewCalculation)
         textViewSubtotal = findViewById(R.id.textViewSubtotal)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applySharedPreferenceSettings()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent Activity in AndroidManifest.xml.
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                val intent = Intent(this@MainActivity, SettingsActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     /**
@@ -118,13 +153,11 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         else if (textViewCalculation.text.toString() == "0") {
             textViewCalculation.text = input
         } else {
-            if (orientationCheckLandscape()) {
-                if (textViewCalculationLastChar() == "e" || textViewCalculationLastChar() == "π") {
-                    textViewCalculation.append("×")
-                }
-                textViewCalculation.append(input)
-                textViewSubtotal.text = calculation()
+            if (textViewCalculationLastChar() == "e" || textViewCalculationLastChar() == "π") {
+                textViewCalculation.append("×")
             }
+            textViewCalculation.append(input)
+            textViewSubtotal.text = calculation()
         }
     }
 
@@ -141,18 +174,16 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     private fun dotButtonInput() {
         errorHandler()
 
-        if (orientationCheckLandscape()) {
-            if (!isNumeric(textViewCalculationLastChar()) && !textViewCalculationLastNumber().contains(".")) {
-                if (textViewCalculationLastChar() == "e" || textViewCalculationLastChar() == "π") {
-                    textViewCalculation.append("×")
-                }
-                textViewCalculation.append("0.")
-            } else if (!textViewCalculationLastNumber().contains(".") && isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != "e" && textViewCalculationLastChar() != "π") {
-                textViewCalculation.append(".")
-                hasResult = false
+        if (!isNumeric(textViewCalculationLastChar()) && !textViewCalculationLastNumber().contains(".")) {
+            if (textViewCalculationLastChar() == "e" || textViewCalculationLastChar() == "π") {
+                textViewCalculation.append("×")
             }
-            textViewSubtotal.text = calculation()
+            textViewCalculation.append("0.")
+        } else if (!textViewCalculationLastNumber().contains(".") && isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != "e" && textViewCalculationLastChar() != "π") {
+            textViewCalculation.append(".")
+            hasResult = false
         }
+        textViewSubtotal.text = calculation()
     }
 
     /**
@@ -171,7 +202,7 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
         if (textViewCalculation.text.toString() == "0") {
             textViewCalculation.text = "("
             bracesOpen++
-        } else if (orientationCheckLandscape() && textViewCalculationLastChar() != "(") {
+        } else if (textViewCalculationLastChar() != "(") {
             textViewCalculation.append("(")
             bracesOpen++
         } else if (bracesOpen - 1 > bracesClosed && (isNumeric(textViewCalculationSecondLastChar()) || textViewCalculationSecondLastChar() == ")")) {
@@ -201,16 +232,14 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             textViewCalculation.text = "ANS"
             textViewCalculation.append(input)
         }
-        if (orientationCheckLandscape()) {
-            if (textViewCalculation.text.toString() == "0" && input == "-") {
-                textViewCalculation.text = input
-            } else if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
-                textViewCalculation.append(input)
-            } else if (textViewCalculationLastChar() == "(" && input == "-") {
-                textViewCalculation.append(input)
-            }
-            hasResult = false
+        if (textViewCalculation.text.toString() == "0" && input == "-") {
+            textViewCalculation.text = input
+        } else if (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")" || textViewCalculationLastChar() == "n" || textViewCalculationLastChar() == "s") {
+            textViewCalculation.append(input)
+        } else if (textViewCalculationLastChar() == "(" && input == "-") {
+            textViewCalculation.append(input)
         }
+        hasResult = false
     }
 
     /**
@@ -237,17 +266,15 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
             if (textViewCalculation.text.toString() == "0" && input != "x²" && input != "xⁿ") {
                 textViewCalculation.text = specialOperatorButtonValueToString()
             } else {
-                if (orientationCheckLandscape()) {
-                    if (!(input == "x²" || input == "xⁿ")) {
-                        if (isNumeric(textViewCalculationLastChar())) {
-                            textViewCalculation.append("×")
-                            textViewCalculation.append(specialOperatorButtonValueToString())
-                        } else if (!isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != ".") {
-                            textViewCalculation.append(specialOperatorButtonValueToString())
-                        }
-                    } else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")") && textViewCalculationLastChar() != ".") {
+                if (!(input == "x²" || input == "xⁿ")) {
+                    if (isNumeric(textViewCalculationLastChar())) {
+                        textViewCalculation.append("×")
+                        textViewCalculation.append(specialOperatorButtonValueToString())
+                    } else if (!isNumeric(textViewCalculationLastChar()) && textViewCalculationLastChar() != ".") {
                         textViewCalculation.append(specialOperatorButtonValueToString())
                     }
+                } else if ((input == "x²" || input == "xⁿ") && (isNumeric(textViewCalculationLastChar()) || textViewCalculationLastChar() == ")") && textViewCalculationLastChar() != ".") {
+                    textViewCalculation.append(specialOperatorButtonValueToString())
                 }
             }
         }
@@ -408,19 +435,6 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
     }
 
     /**
-     * <p>Method to chack phone orientation</p>
-     */
-    private fun orientationCheckLandscape(): Boolean {
-        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (textViewCalculation.text.length >= 13) {
-                throwToast("You aren't allowed to enter more than 13 characters!")
-                return false
-            }
-        }
-        return true
-    }
-
-    /**
      * <p>Method to check if value is numeric</p>
      */
     private fun isNumeric(char: CharSequence): Boolean {
@@ -504,5 +518,16 @@ class MainActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
      */
     private fun throwToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun applySharedPreferenceSettings() {
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+
+        val darkmode = sharedPreferences.getBoolean("darkmode", true)
+        if (darkmode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
     }
 }
