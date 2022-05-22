@@ -6,6 +6,15 @@ import androidx.preference.PreferenceFragmentCompat
 import de.felix.calculator.databinding.ActivitySettingsBinding
 import kotlinx.android.synthetic.main.activity_settings.*
 
+/**
+ * @author <p>Felix Reichert</p>
+ * <p>Matrikelnummer: 19019</p>
+ * <p>Package: de.felix.calculator</p>
+ * <p>Datei: SettingsActivity.kt</p>
+ * <p>Datum: 17.05.2022</p>
+ * <p>Version: 1</p>
+ */
+
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
