@@ -1,3 +1,3 @@
-# MS-Calculator
+# Calculator
 
-A simple calculator-App as a exersice for university
+A simple android calculator app as a exersice for university
